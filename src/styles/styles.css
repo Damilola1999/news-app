@@ -1,0 +1,21 @@
+/* You can add global styles to this file, and also import other style files */
+@font-face {
+  font-family: 'PublicSans-SemiBoldItalic';
+  src: url('/src/app/assests/fonts/PublicSans-SemiBoldItalic.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Aurestia-ThinSemiCondIta';
+    src: url('/src/app/assests/fonts/Aurestia-ThinSemiCondensed.otf')
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f8ff;
+  overflow-y: auto;
+  overflow-x: auto;
+}

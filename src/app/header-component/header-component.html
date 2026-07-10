@@ -1,0 +1,96 @@
+<main>
+  <article>
+    <section id="header">
+      <div class="head-icon">
+        <button class="toggle-btn" (click)="toggleMenu()" aria-lable="Toggle navigation">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 12H21M3 6H21M3 18H21"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        {{ isMenuOpen ? '' : ''}}
+        </button>
+        <h1>News<span>Vision</span></h1>
+        <p>Real News. Real fast</p>
+      </div>
+
+      <div [class.open]="isMenuOpen" class="nav-links">
+        <a href="">Home</a>
+        <a href="">India</a>
+        <a href="">World</a>
+        <a href="">Business</a>
+        <a href="">Technology</a>
+        <a href="">Sports</a>
+        <a href="">Entertainment</a>
+        <a href="">Lifestyle</a>
+        <a href="">Opinion</a>
+      </div>
+
+      <div class="header-icons">
+        <!-- Search Icon -->
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+
+        <!-- Bell Icon -->
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18 8A6 6 0 0 0 6 8C6 14.667 2 16 2 16H22C22 16 18 14.667 18 8ZM13.729 21C13.553 21.303 13.301 21.555 13.001 21.782C12.701 22.009 12.361 22.204 12 22.293C11.639 22.204 11.299 22.009 10.999 21.782C10.699 21.555 10.447 21.303 10.271 21H13.729Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <button class="btn-live">
+          LIVE TV
+          <!-- Play Icon -->
+          <svg
+          class="play"
+            width="15"
+            height="15"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 3L19 12L5 21V3Z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </section>
+  </article>
+</main>

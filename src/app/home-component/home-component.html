@@ -1,0 +1,400 @@
+<main>
+  <article>
+    <section id="first-stage">
+
+      <!-- ── Weather Widget ─────────────────────────────────────────────── -->
+      <div class="weather">
+        <div class="location-label">
+          <p>
+            {{ locationLabel() }}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C8.13401 2 5 5.13401 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13401 15.866 2 12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 11.5C13.3807 11.5 14.5 10.3807 14.5 9C14.5 7.61929 13.3807 6.5 12 6.5C10.6193 6.5 9.5 7.61929 9.5 9C9.5 10.3807 10.6193 11.5 12 11.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </p>
+          <button class="change" (click)="openChange()">Change</button>
+        </div>
+
+        @if (isChanging()) {
+          <div class="city-input-row">
+            <input
+              type="text"
+              placeholder="Enter city name..."
+              [value]="cityInput()"
+              (input)="onCityInput($any($event.target).value)"
+              (keyup.enter)="confirmChange()"
+            />
+            <button class="confirm" (click)="confirmChange()">Go</button>
+            <button class="cancel" (click)="cancelChange()">✕</button>
+          </div>
+        }
+
+        @if (loading()) {
+          <div class="status">Loading weather...</div>
+        } @else if (error()) {
+          <div class="status error">{{ error() }}</div>
+        }
+
+        @if (data() && !loading()) {
+          <div class="weather-condition">
+            <img [src]="currentIcon()" [alt]="currentDesc()" />
+            <h3>
+              {{ currentTemp() }}°C
+              <span>{{ capitalize(currentDesc()) }}</span>
+            </h3>
+          </div>
+
+          <div class="days-weather">
+            @for (day of forecastDays(); track day.dt) {
+              <div class="week-day">
+                <h4>{{ dayName(day.dt) }}</h4>
+                <p>{{ day.temp.max | number: '1.0-0' }}°C / {{ day.temp.min | number: '1.0-0' }}°C</p>
+                <img [src]="iconUrl(day.weather[0]?.icon)" [alt]="day.weather[0]?.description" />
+              </div>
+            }
+          </div>
+
+          <button class="view">View Full Forecast &gt;</button>
+        }
+      </div>
+
+    
+
+      <!-- ── Live Sports Widget — ALL children live inside this ONE div ─── -->
+      <div class="live-sports">
+
+        <!-- Header -->
+        <div class="sports-header">
+          <div class="header-left">
+            <h2>Live Sports Updates</h2>
+            <span class="live-badge" *ngIf="liveCount() > 0">
+              <span class="pulse-dot"></span>{{ liveCount() }} LIVE
+            </span>
+          </div>
+          <div class="header-right">
+            <select class="league-select" (change)="onLeagueChange($event)">
+              <option *ngFor="let l of leagues" [value]="l.shortcut">{{ l.label }}</option>
+            </select>
+            <button class="btn-view-all">View All</button>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <button
+            *ngFor="let f of sportsFilters"
+            class="filter-btn"
+            [class.active]="activeFilter() === f"
+            (click)="setsSportsFilter(f)"
+          >
+            {{ f }}
+          </button>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-state" *ngIf="sportsLoading()">
+          <div class="spinner"></div>
+          <p>Fetching live scores…</p>
+        </div>
+
+        <!-- Error -->
+        <div class="error-state" *ngIf="sportsError() && !sportsLoading()">
+          <p>⚠️ {{ sportsError() }}</p>
+          <button (click)="loadSports()">Retry</button>
+        </div>
+
+        <!-- Match List -->
+        <div class="sports-body" *ngIf="!sportsLoading() && !sportsError()">
+          <ng-container *ngIf="filteredMatches().length > 0; else noMatches">
+            <div
+              class="match-card"
+              *ngFor="let match of filteredMatches(); trackBy: trackByMatch"
+              [class.is-live]="getMatchStatus(match) === 'LIVE'"
+              [class.is-finished]="getMatchStatus(match) === 'FT'"
+              [class.is-upcoming]="getMatchStatus(match) === 'UPCOMING'"
+            >
+              <!-- Match Meta -->
+              <div class="updates">
+                <h3 class="live-display" [class.blink]="getMatchStatus(match) === 'LIVE'">
+                  {{ getMatchStatus(match) }}
+                  <span class="match-minute" *ngIf="getMatchStatus(match) === 'LIVE' && getMatchMinute(match)">
+                    {{ getMatchMinute(match) }}'
+                  </span>
+                </h3>
+                <p class="league-name">{{ match.leagueName }}</p>
+                <p class="kickoff-time" *ngIf="getMatchStatus(match) === 'UPCOMING'">
+                  ⏱ {{ formatKickoff(match.matchDateTime) }}
+                </p>
+              </div>
+
+              <!-- Teams -->
+              <div class="opponent">
+                <div class="opponent-1">
+                  <img [src]="match.team1.teamIconUrl" [alt]="match.team1.teamName" onerror="this.src='assets/team-placeholder.svg'" />
+                  <span class="team-short">{{ match.team1.shortName || match.team1.teamName }}</span>
+                </div>
+
+                <div class="score-block">
+                  <ng-container *ngIf="getMatchStatus(match) !== 'UPCOMING'; else vsBlock">
+                    <span class="score">{{ getMatchScore(match).team1 }} – {{ getMatchScore(match).team2 }}</span>
+                  </ng-container>
+                  <ng-template #vsBlock>
+                    <span class="vs-label">VS</span>
+                  </ng-template>
+                </div>
+
+                <div class="opponent-2">
+                  <img [src]="match.team2.teamIconUrl" [alt]="match.team2.teamName" onerror="this.src='assets/team-placeholder.svg'" />
+                  <span class="team-short">{{ match.team2.shortName || match.team2.teamName }}</span>
+                </div>
+              </div>
+
+              <!-- Latest Goal -->
+              <div class="latest-goal" *ngIf="match.goals && match.goals.length > 0 && getMatchStatus(match) === 'LIVE'">
+                ⚽ {{ match.goals[match.goals.length - 1] | json }}
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #noMatches>
+            <div class="empty-state">
+              <p>No {{ activeFilter() === 'ALL' ? '' : activeFilter() }} matches right now</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Footer -->
+        <div class="sports-footer" *ngIf="sportsUpdatedAt()">
+          <span>Updated {{ sportsUpdatedAt() | date:'HH:mm:ss' }} · Auto-refresh every 60s</span>
+          <span>Data: <a href="https://www.openligadb.de" target="_blank">OpenLigaDB</a></span>
+        </div>
+
+      </div><!-- /.live-sports -->
+
+        <!-- ── Stocks Widget ───────────────────────────────────────────────── -->
+      <div class="stocks-section">
+        <div class="stocks-header">
+          <div class="stocks-title-group">
+            <span class="stocks-icon">📈</span>
+            <h2 class="stocks-title">Markets</h2>
+            <span class="stocks-date">{{ stockDate() }}</span>
+          </div>
+          <button class="stocks-refresh-btn" (click)="loadStocks()" [disabled]="stocksLoading()">
+            <span [class.spinning]="stocksLoading()">↻</span> Refresh
+          </button>
+        </div>
+
+        @if (stocksError()) {
+          <div class="stocks-error">⚠ {{ stocksError() }}</div>
+        }
+
+        @if (stocksLoading()) {
+          <div class="stocks-grid">
+            @for (i of [1,2,3,4,5,6,7]; track i) {
+              <div class="stock-card skeleton"></div>
+            }
+          </div>
+        }
+
+        @if (!stocksLoading() && stocks().length) {
+          <div class="stocks-grid">
+            @for (stock of stocks(); track stock.symbol) {
+              <div class="stock-card" [class.positive]="stock.change >= 0" [class.negative]="stock.change < 0">
+                <div class="stock-top">
+                  <span class="stock-symbol">{{ stock.symbol }}</span>
+                  <span class="stock-badge" [class.up]="stock.change >= 0" [class.down]="stock.change < 0">
+                    {{ stock.change >= 0 ? '▲' : '▼' }} {{ stock.changePct | number: '1.2-2' }}%
+                  </span>
+                </div>
+                <div class="stock-price">${{ stock.close | number: '1.2-2' }}</div>
+                <div class="stock-meta">
+                  <div class="stock-meta-row"><span>Open</span><span>${{ stock.open | number: '1.2-2' }}</span></div>
+                  <div class="stock-meta-row"><span>High</span><span>${{ stock.high | number: '1.2-2' }}</span></div>
+                  <div class="stock-meta-row"><span>Low</span><span>${{ stock.low  | number: '1.2-2' }}</span></div>
+                  <div class="stock-meta-row"><span>Vol</span><span>{{ formatVolume(stock.volume) }}</span></div>
+                  @if (stock.afterHours) {
+                    <div class="stock-meta-row after-hours">
+                      <span>After-hrs</span><span>${{ stock.afterHours | number: '1.2-2' }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </section>
+
+   <section id="news-container">
+  <div class="news-header">
+    <h1>Latest News</h1>
+
+    <div class="filters">
+      <!-- Search -->
+      <input type="text"
+        placeholder="Search in titles..."
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+        class="search-input"/>
+      <button (click)="onSearch()" class="btn-search">Search</button>
+
+      <!-- Language -->
+      <select [(ngModel)]="selectedLanguage" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Languages</option>
+        @for (lang of LANGUAGES; track lang.code){
+          <option [value]="lang.code">{{ lang.label }}</option>
+        }
+      </select>
+
+      <!-- Category -->
+      <select [(ngModel)]="selectedTopic" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Topics</option>
+        @for (topic of topics(); track topic){
+          <option [value]="topic">{{ topic }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Error -->
+  @if (fault()){
+    <div class="error-banner">{{ fault() }}</div>
+  }
+
+  <!-- booting -->
+  @if(booting()){
+    <div class="booting-grid">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div skeleton-card></div>
+      }
+    </div>
+  }
+
+  <!-- Article Detail Modal -->
+  @if(selectedArticle()){
+    <div class="modal-overlay" (click)="closeArticle()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeArticle()">✕</button>
+
+        @if (selectedArticle()!.image_url){
+          <img [src]="selectedArticle()!.image_url" [alt]="selectedArticle()!.title" class="modal-thumbnail" />
+        }
+
+        <h2>{{ selectedArticle()!.title }}</h2>
+
+        <p class="modal-meta">
+          {{ formatDate(selectedArticle()!.pubDate) }}
+          @if(selectedArticle()!.source_name){
+            · {{ selectedArticle()!.source_name }}
+          }
+          @if(selectedArticle()!.creator?.length){
+            · {{ selectedArticle()!.creator!.join(', ') }}
+          }
+        </p>
+
+        <p class="modal-body">{{ selectedArticle()!.content ?? selectedArticle()!.description }}</p>
+
+        @if(selectedArticle()!.link){
+          <a [href]="selectedArticle()!.link" target="_blank" class="modal-link">Read Full Article</a>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Detail booting -->
+  @if (detailbooting()) {
+    <div class="modal-overlay">
+      <div class="detail-spinner">Loading article...</div>
+    </div>
+  }
+
+  <!-- Articles Grid -->
+  @if(!booting()){
+    <div class="articles-grid">
+      @for (article of articles(); track article.article_id){
+        <div class="article-card" (click)="openArticle(article.article_id)">
+          <div class="card-body">
+            <p class="card-publisher">{{ article.source_name }}</p>
+            <h3 class="card-title">{{ article.title }}</h3>
+            <p class="card-date">{{ formatDate(article.pubDate) }}</p>
+          </div>
+        </div>
+      }
+
+      @if (articles().length === 0){
+        <div class="empty-state">No articles found. Try different filters.</div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if(meta()){
+      <button class="btn-page" [disabled]="cursorHistory.length === 0" (click)="prevPage()">
+        ← Previous
+      </button>
+      <span class="page-info">{{ meta()!.totalResults }} results</span>
+      <button class="btn-page" [disabled]="!meta()!.nextPage" (click)="nextPage()">
+        Next →
+      </button>
+    }
+  }
+
+</section>
+
+  </article>
+</main>
+
+<footer id="footer">
+  <div class="footer-grid"> 
+  <div class="head">
+    <h2>NEWS<span>VISION</span></h2>
+    <p>Delivering accurate, fast, and unbiased <br>
+       news from around the world since <br>
+        1982.</p>
+  </div>
+
+  <div class="list-group">
+    <div class="list">
+      <h3>QUICK LINKS</h3>
+      <ul>
+      <a href=""><li>Home</li></a>
+      <a href=""><li>India</li></a>
+      <a href=""><li>World</li></a>
+      <a href=""><li>Business</li></a>
+      <a href=""><li>Sports</li></a>
+
+      </ul>
+
+    </div>
+
+    <div class="list">
+      <h3>COMPANY</h3>
+      <ul>
+      <a href=""><li>About Us</li></a>
+      <a href=""><li>Contact</li></a>
+      <a href=""><li>Careers</li></a>
+      <a href=""><li>Advertise</li></a>
+      <a href=""><li>RSSFeeds</li></a>
+
+      </ul>
+
+    </div>
+
+    <div class="list">
+      <h3>LEGAL</h3>
+      <ul>
+      <a href=""><li>Privacy Policy</li></a>
+      <a href=""><li>Terms of Use</li></a>
+      <a href=""><li>Cookie Policy</li></a>
+      <a href=""><li>Corrections</li></a>
+      </ul>
+    </div>
+      
+  </div>
+  </div>
+ 
+</footer>
+ <div class="last-pg">
+    <h3>NewsVision <span>Real Newss.RealFast©2026NewsVisionMedia</span></h3>
+
+  </div>
