@@ -1559,7 +1559,7 @@ min-width: 105vw;
 
 .stocks-section {
   min-width: 86vw;
-  min-height: 160vh;
+  min-height: 175vh;
   padding: 2rem .1rem;
 }
 .stocks-grid {
@@ -1656,7 +1656,7 @@ min-width: 110vw;
 
 .stocks-section {
   min-width: 86vw;
-  min-height: 160vh;
+  min-height: 175vh;
   padding: 2rem 1rem;
 }
 .stocks-grid {
@@ -1754,7 +1754,7 @@ min-width: 150vw;
 
 .stocks-section {
   min-width: 100vw;
-  min-height: 160vh;
+  min-height: 175vh;
   padding: 2rem 1rem;
 }
 .stocks-grid {
