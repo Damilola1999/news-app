@@ -20,5 +20,5 @@ body {
   padding: 0;
   background-color: #f0f8ff;
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
